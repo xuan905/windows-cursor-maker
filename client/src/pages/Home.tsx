@@ -7,6 +7,43 @@ import { toast } from "sonner";
 const SPRITE_URL = "/manus-storage/windows-cursor-15-grid-transparent_7de4f2f5.png";
 const EMPTY_ART = "/manus-storage/cursor-maker-empty-state_ac18c21a.png";
 
+async function parseCurFile(file: File) {
+  const buffer = await file.arrayBuffer();
+  const view = new DataView(buffer);
+  if (view.byteLength < 22 || view.getUint16(0, true) !== 0 || view.getUint16(2, true) !== 2) throw new Error("這不是有效的 Windows .cur 檔案");
+  const count = view.getUint16(4, true);
+  if (!count) throw new Error("CUR 檔案沒有包含游標影像");
+  const entry = 6;
+  const width = view.getUint8(entry) || 256;
+  const height = view.getUint8(entry + 1) || 256;
+  const bytesInRes = view.getUint32(entry + 8, true);
+  const imageOffset = view.getUint32(entry + 12, true);
+  const dib = imageOffset;
+  const headerSize = view.getUint32(dib, true);
+  const dibWidth = view.getInt32(dib + 4, true);
+  const dibHeight = Math.abs(view.getInt32(dib + 8, true)) / 2;
+  const bpp = view.getUint16(dib + 14, true);
+  if (dibWidth !== width || dibHeight !== height || (bpp !== 32 && bpp !== 24)) throw new Error(`目前支援 24-bit／32-bit CUR；讀到 ${bpp}-bit ${width}×${height}`);
+  const xorStride = Math.floor((width * bpp + 31) / 32) * 4;
+  const andStride = Math.floor((width + 31) / 32) * 4;
+  const paletteBytes = bpp <= 8 ? (1 << view.getUint16(dib + 14, true)) * 4 : 0;
+  const xorStart = dib + headerSize + paletteBytes;
+  const andStart = xorStart + xorStride * height;
+  const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext("2d"); if (!ctx) throw new Error("瀏覽器無法建立預覽畫布");
+  const pixels = ctx.createImageData(width, height);
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const srcY = height - 1 - y;
+    const p = xorStart + srcY * xorStride + x * (bpp / 8);
+    const out = (y * width + x) * 4;
+    pixels.data[out] = view.getUint8(p + 2); pixels.data[out + 1] = view.getUint8(p + 1); pixels.data[out + 2] = view.getUint8(p);
+    const maskByte = view.getUint8(andStart + srcY * andStride + Math.floor(x / 8));
+    pixels.data[out + 3] = (maskByte & (0x80 >> (x % 8))) ? 0 : (bpp === 32 ? view.getUint8(p + 3) : 255);
+  }
+  ctx.putImageData(pixels, 0, 0);
+  return { src: canvas.toDataURL("image/png"), width, height, bytes: bytesInRes };
+}
+
 const cursorNames = [
   "標準選擇", "文字選擇", "忙碌", "背景忙碌", "精確選擇",
   "手寫", "不可用", "垂直調整", "水平調整", "對角調整 ↗",
@@ -57,15 +94,27 @@ export default function Home() {
   const [hotspotX, setHotspotX] = useState(0);
   const [hotspotY, setHotspotY] = useState(0);
   const [isReady, setIsReady] = useState(true);
+  const [curPreview, setCurPreview] = useState<{ src: string; width: number; height: number; name: string } | null>(null);
 
   const selectedName = cursorNames[active];
   const grid = useMemo(() => Array.from({ length: 15 }, (_, i) => i), []);
 
-  const handleUpload = (file?: File) => {
+  const handleUpload = async (file?: File) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.error("請選擇 PNG、JPG 或 WebP 圖片。"); return; }
+    const isCur = file.name.toLowerCase().endsWith(".cur") || file.type === "image/x-icon";
+    if (isCur) {
+      try {
+        const parsed = await parseCurFile(file);
+        setCurPreview({ ...parsed, name: file.name });
+        toast.success(`${file.name} 已成功讀取`);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "無法讀取這個 CUR 檔案");
+      }
+      return;
+    }
+    if (!file.type.startsWith("image/")) { toast.error("請選擇 PNG、JPG、WebP 或 CUR 檔案。"); return; }
     const reader = new FileReader();
-    reader.onload = () => { setImageSrc(String(reader.result)); setIsReady(true); toast.success("素材已載入工作台"); };
+    reader.onload = () => { setCurPreview(null); setImageSrc(String(reader.result)); setIsReady(true); toast.success("素材已載入工作台"); };
     reader.readAsDataURL(file);
   };
 
@@ -110,14 +159,14 @@ export default function Home() {
           <div className="rail-rule" />
           <div className="rail-tip"><WandSparkles size={17} /><p>小提示</p><span>使用透明 PNG 能保留最乾淨的邊緣。棋盤格只是預覽，不會被輸出。</span></div>
           <button className="upload-link" onClick={() => fileRef.current?.click()}><Upload size={15} /> 上傳另一張圖</button>
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload(e.target.files?.[0])} />
+          <input ref={fileRef} type="file" accept="image/*,.cur,image/x-icon" hidden onChange={(e) => handleUpload(e.target.files?.[0])} />
         </aside>
 
         <section className="preview-stage">
-          <div className="stage-head"><div><span className="section-index">A</span><div><p className="section-label">SPRITE SHEET PREVIEW</p><h2>選一格開始校準</h2></div></div><span className="sheet-size">1920 × 1920 px</span></div>
+          <div className="stage-head"><div><span className="section-index">A</span><div><p className="section-label">SPRITE SHEET PREVIEW</p><h2>選一格開始校準</h2></div></div><span className="sheet-size">{curPreview ? `${curPreview.width} × ${curPreview.height} px` : "1920 × 1920 px"}</span></div>
           <div className="sheet-frame">
             <div className="crop-corner top-left" /><div className="crop-corner bottom-right" />
-            {isReady ? <div className="sprite-grid">{grid.map((i) => <button key={i} className={`sprite-cell ${active === i ? "selected" : ""}`} onClick={() => setActive(i)} aria-label={cursorNames[i]}><span className="sprite-img" aria-hidden="true" style={{ backgroundImage: `url(${imageSrc})`, backgroundPosition: `${(i % 5) * 25}% ${Math.floor(i / 5) * 50}%` }} /><span className="cell-number">{String(i + 1).padStart(2, "0")}</span></button>)}</div> : <div className="empty-state"><img src={EMPTY_ART} alt="" /><b>拖曳一張 15 格游標圖到這裡</b><span>或使用左側按鈕上傳素材</span></div>}
+            {curPreview ? <div className="cur-preview"><div className="cur-preview-canvas"><img src={curPreview.src} alt={`${curPreview.name} 預覽`} /></div><strong>{curPreview.name}</strong><span>{curPreview.width} × {curPreview.height} px · alpha decoded</span><button onClick={() => setCurPreview(null)}>返回 15 格素材表</button></div> : isReady ? <div className="sprite-grid">{grid.map((i) => <button key={i} className={`sprite-cell ${active === i ? "selected" : ""}`} onClick={() => setActive(i)} aria-label={cursorNames[i]}><span className="sprite-img" aria-hidden="true" style={{ backgroundImage: `url(${imageSrc})`, backgroundPosition: `${(i % 5) * 25}% ${Math.floor(i / 5) * 50}%` }} /><span className="cell-number">{String(i + 1).padStart(2, "0")}</span></button>)}</div> : <div className="empty-state"><img src={EMPTY_ART} alt="" /><b>拖曳一張 15 格游標圖到這裡</b><span>或使用左側按鈕上傳素材</span></div>}
           </div>
           <div className="selection-readout"><div><span className="readout-label">CURRENT SELECTION</span><strong>{String(active + 1).padStart(2, "0")} / {selectedName}</strong></div><div className="readout-check"><Check size={14} /> alpha channel detected</div></div>
         </section>
