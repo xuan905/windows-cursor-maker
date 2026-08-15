@@ -1,0 +1,8 @@
+import { writeFile } from "node:fs/promises";
+import { generateImage } from "./server/_core/imageGeneration.ts";
+
+const prompt = `Create only the first row of a 5x3 transparent PNG sprite sheet for a Windows animated cursor test. Generate exactly five equal 64x64-ready cells in one horizontal row. All five cells must represent the same Standard Select cursor meaning: use the exact same black-and-white Windows standard arrow in the upper-left safe corner, with the arrow shape, scale, angle, hotspot, and position identical in every frame. Use one original chibi martial-arts anime hero inspired by energetic shonen manga, not any named or copyrighted character. Keep the character fully inside a 12% safe margin; no hair, hand, foot, prop, glow, shadow, outline, or cursor may touch or cross the 64x64 cell boundary. The only frame-to-frame change is a subtle continuous action: frame 1 relaxed, frame 2 slight weight shift, frame 3 small hand movement, frame 4 gentle bounce, frame 5 return toward frame 1. Preserve the same camera, costume, colors, proportions, face identity, lighting, and transparent RGBA background. No background, green screen, horizontal line, speed line, divider, checkerboard, watermark, cropped body part, extra cursor, text, or cross-cell overlap. This is a five-frame animation strip, not five unrelated illustrations.`;
+
+const result = await generateImage({ prompt });
+await writeFile("/home/ubuntu/ani-prompt-smoke-result.json", JSON.stringify({ generatedAt: new Date().toISOString(), url: result.url, prompt }, null, 2));
+console.log(JSON.stringify({ url: result.url }, null, 2));

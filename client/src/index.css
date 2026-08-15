@@ -79,3 +79,10 @@ button { cursor:pointer; }
 .frame-no { position:absolute; z-index:2; top:4px; right:5px; color:var(--blue); background:#f6f2e9e8; padding:2px 3px; font:9px 'IBM Plex Mono'; }
 .ani-frames p { color:var(--muted); font-size:.72rem; line-height:1.5; margin:.65rem 0 0; }
 @media (max-width:760px) { .ani-heading, .ani-body { display:block; } .ani-controls { justify-content:flex-start; margin-top:.8rem; } .ani-preview { width:100%; margin-bottom:1rem; } .ani-frame-grid { gap:.35rem; } }
+
+.ani-prompt { margin-top:.55rem; max-width:52rem; color:var(--muted); font: .72rem/1.55 'IBM Plex Mono',monospace; }
+.ani-prompt summary { cursor:pointer; color:var(--blue); font-weight:700; }
+.ani-prompt p { margin:.45rem 0; max-height:9rem; overflow:auto; background:rgba(36,87,214,.04); border-left:2px solid var(--blue); padding:.55rem .7rem; }
+.ani-prompt div { display:flex; gap:.5rem; flex-wrap:wrap; }
+.ani-prompt button { border:1px solid rgba(22,25,31,.2); background:#f7f4ed; color:#18233b; padding:.4rem .55rem; font:600 .65rem 'IBM Plex Mono',monospace; cursor:pointer; }
+.ani-prompt button:last-child { color:#fff; background:var(--blue); border-color:var(--blue); }
