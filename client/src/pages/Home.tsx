@@ -4,7 +4,7 @@ import { Download, FileImage, Grid3X3, MousePointer2, Ruler, Upload, WandSparkle
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const SPRITE_URL = "/manus-storage/windows-cursor-15-grid-transparent_7de4f2f5.png";
+const SPRITE_URL = "/manus-storage/super-saiyan-cursor-sheet_45b0abfe.png";
 const EMPTY_ART = "/manus-storage/cursor-maker-empty-state_ac18c21a.png";
 
 async function parseCurFile(file: File) {
@@ -124,25 +124,41 @@ export default function Home() {
     reader.readAsDataURL(file);
   };
 
-  const exportSelected = async () => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const size = Math.max(32, Math.min(256, cellSize - padding * 2));
-      canvas.width = size; canvas.height = size;
-      const ctx = canvas.getContext("2d"); if (!ctx) return;
-      const col = active % 5; const row = Math.floor(active / 5);
-      const sourceSize = img.width / 5;
-      ctx.clearRect(0, 0, size, size);
-      ctx.drawImage(img, col * sourceSize + padding, row * sourceSize + padding, sourceSize - padding * 2, sourceSize - padding * 2, 0, 0, size, size);
-      const blob = encodeCur(canvas, hotspotX, hotspotY);
-      if (blob) { downloadBlob(blob, `${String(active + 1).padStart(2, "0")}-${selectedName}.cur`); toast.success(`${selectedName}.cur 已下載`); }
-    };
-    img.src = imageSrc;
+  const buildCursorBlob = (img: HTMLImageElement, index: number) => {
+    const canvas = document.createElement("canvas");
+    const size = Math.max(32, Math.min(256, cellSize - padding * 2));
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext("2d"); if (!ctx) return null;
+    const col = index % 5; const row = Math.floor(index / 5);
+    const sourceSize = img.width / 5;
+    ctx.clearRect(0, 0, size, size);
+    ctx.drawImage(img, col * sourceSize + padding, row * sourceSize + padding, sourceSize - padding * 2, sourceSize - padding * 2, 0, 0, size, size);
+    return encodeCur(canvas, hotspotX, hotspotY);
   };
 
-  const exportAll = () => toast.info("批次輸出介面已準備好，下一版會加入 15 個 CUR 的 ZIP 打包下載。");
+  const loadSpriteImage = () => new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image(); img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img); img.onerror = () => reject(new Error("素材圖無法載入，請重新上傳 PNG")); img.src = imageSrc;
+  });
+
+  const exportSelected = async () => {
+    try {
+      const blob = buildCursorBlob(await loadSpriteImage(), active);
+      if (blob) { downloadBlob(blob, `${String(active + 1).padStart(2, "0")}-${selectedName}.cur`); toast.success(`${selectedName}.cur 已下載`); }
+    } catch (error) { toast.error(error instanceof Error ? error.message : "輸出失敗"); }
+  };
+
+  const exportAll = async () => {
+    try {
+      const img = await loadSpriteImage();
+      let completed = 0;
+      for (let index = 0; index < cursorNames.length; index++) {
+        const blob = buildCursorBlob(img, index);
+        if (blob) { downloadBlob(blob, `${String(index + 1).padStart(2, "0")}-${cursorNames[index]}.cur`); completed++; await new Promise((resolve) => setTimeout(resolve, 120)); }
+      }
+      toast.success(`已批次輸出 ${completed} 個 CUR 檔案`);
+    } catch (error) { toast.error(error instanceof Error ? error.message : "批次輸出失敗"); }
+  };
 
   return (
     <main className="workbench-shell">
