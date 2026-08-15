@@ -24,3 +24,25 @@ button { cursor:pointer; }
 .footer-note { max-width:1380px; justify-content:space-between; margin:55px auto 0; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font:10px 'IBM Plex Mono'; }
 @media (max-width:1050px) { .workspace-grid { grid-template-columns:150px minmax(0,1fr); gap:24px; }.inspector-panel { grid-column:2; border-left:0; border-top:1px solid var(--line); padding:24px 0 0; display:grid; grid-template-columns:repeat(2,1fr); gap:0 26px; }.inspector-panel .panel-heading,.export-box { grid-column:1/-1; }.export-box { margin-top:12px; } }
 @media (max-width:720px) { .workbench-shell { padding:0 18px 22px; }.topbar { height:70px; }.topbar-meta { display:none; }.intro-band { display:block; padding:42px 0 35px; }.intro-band h1 { font-size:45px; }.intro-note { margin-top:26px; display:inline-flex; }.workspace-grid { display:block; }.left-rail { display:none; }.preview-stage { margin-bottom:40px; }.sheet-frame { padding:15px; }.sprite-grid { gap:4px; }.cell-number { font-size:8px; top:3px; left:3px; }.inspector-panel { display:block; padding:26px 0 0; }.footer-note { display:block; line-height:2; }.footer-note span { display:block; } }
+
+
+/* Design philosophy: Neo-editorial utility — safe-frame editing should feel like a print calibration desk, with cobalt controls and visible production boundaries. */
+.prompt-strip { margin: 0 0 2.25rem; display: flex; gap: 1.5rem; align-items: flex-start; border: 1px solid rgba(22,25,31,.18); border-left: 3px solid #285dcc; background: rgba(255,255,255,.48); padding: 1rem 1.1rem; box-shadow: 8px 8px 0 rgba(40,93,204,.08); }
+.prompt-strip > div { min-width: 0; flex: 1; }
+.prompt-strip p { margin: .35rem 0 0; max-height: 4.2rem; overflow: auto; color: #545861; font-size: .77rem; line-height: 1.55; }
+.prompt-strip button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: .45rem; border: 1px solid #285dcc; background: #285dcc; color: #fff; padding: .65rem .8rem; font: 600 .72rem/1 "IBM Plex Mono", monospace; transition: transform .16s ease-out, background .16s ease-out; }
+.prompt-strip button:hover { background: #1d49aa; }
+.prompt-strip button:active { transform: scale(.97); }
+.sprite-cell { position: relative; overflow: hidden; }
+.sprite-cell .safe-box { position: absolute; inset: 9%; z-index: 1; border: 1px dashed rgba(222,74,57,.72); pointer-events: none; opacity: .78; }
+.sprite-cell .sprite-img { position: absolute; inset: 0; z-index: 0; background-repeat: no-repeat; transform-origin: center; transition: transform .16s cubic-bezier(.23,1,.32,1); }
+.sprite-cell.selected .safe-box { border-color: #de4a39; box-shadow: inset 0 0 0 1px rgba(222,74,57,.12); }
+.nudge-grid { display: grid; grid-template-columns: repeat(3, 2rem); gap: .35rem; justify-content: center; margin: .75rem 0 .55rem; }
+.nudge-grid button { width: 2rem; height: 2rem; border: 1px solid rgba(22,25,31,.2); background: #f7f4ed; color: #18233b; font: 700 1rem/1 "IBM Plex Mono", monospace; transition: background .15s ease-out, transform .15s ease-out; }
+.nudge-grid button:first-child { grid-column: 2; }
+.nudge-grid button:nth-child(2) { grid-column: 1; }
+.nudge-grid button:nth-child(3) { grid-column: 3; }
+.nudge-grid button:nth-child(4) { grid-column: 2; }
+.nudge-grid button:hover { background: #dce6ff; }
+.nudge-grid button:active { transform: scale(.96); }
+@media (max-width: 760px) { .prompt-strip { flex-direction: column; } .prompt-strip button { width: 100%; justify-content: center; } }
