@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import JSZip from "jszip";
 import { getDynamicFrameIndices, getDynamicFrameSourceRect } from "../client/src/lib/dynamicSheet";
+import { cursorNames, cursorArrowSpecs, cursorArrowKinds, hasRequiredArrowStyle, inspectArrowRegion } from "../client/src/lib/cursorArrows";
 import { encodeAni } from "@/lib/ani";
 
 function readAscii(bytes: Uint8Array, offset: number, length: number) {
@@ -10,6 +11,44 @@ function readAscii(bytes: Uint8Array, offset: number, length: number) {
 function readU32(bytes: Uint8Array, offset: number) {
   return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(offset, true);
 }
+
+describe("dynamic work-item arrow specification", () => {
+  it("defines one white-fill black-outline symbol for each of the 15 work items", () => {
+    expect(cursorNames).toHaveLength(15);
+    expect(cursorArrowSpecs).toHaveLength(15);
+    expect(cursorArrowKinds).toHaveLength(15);
+    expect(cursorArrowSpecs.every(hasRequiredArrowStyle)).toBe(true);
+    expect(new Set(cursorNames).size).toBe(15);
+  });
+
+  it("reports a traceable expected arrow kind for every cell", () => {
+    const pixels = new Uint8ClampedArray(64 * 64 * 4);
+    for (let i = 0; i < 64 * 64; i += 1) {
+      pixels[i * 4] = 255;
+      pixels[i * 4 + 1] = 255;
+      pixels[i * 4 + 2] = 255;
+      pixels[i * 4 + 3] = 255;
+    }
+    const results = cursorArrowKinds.map((kind) => inspectArrowRegion(pixels, 64, 64, kind));
+    expect(results.map((result) => result.expectedKind)).toEqual([...cursorArrowKinds]);
+  });
+
+  it("detects white fill and black outline pixels inside the upper-left safe region", () => {
+    const pixels = new Uint8ClampedArray(64 * 64 * 4);
+    const paint = (x: number, y: number, r: number, g: number, b: number) => {
+      const offset = (y * 64 + x) * 4;
+      pixels[offset] = r;
+      pixels[offset + 1] = g;
+      pixels[offset + 2] = b;
+      pixels[offset + 3] = 255;
+    };
+    paint(2, 2, 0, 0, 0);
+    paint(3, 3, 0, 0, 0);
+    paint(4, 4, 255, 255, 255);
+    const inspection = inspectArrowRegion(pixels, 64, 64);
+    expect(inspection).toEqual({ present: true, whiteFill: true, blackOutline: true, diagonalShape: true, directionalMatch: true, expectedKind: "standard", insideSafeRegion: true });
+  });
+});
 
 describe("5x3 dynamic sheet row selection", () => {
   it("maps groups 1, 2, and 3 to the first, second, and third five-frame rows", () => {
