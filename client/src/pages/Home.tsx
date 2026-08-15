@@ -76,12 +76,18 @@ function encodeCur(canvas: HTMLCanvasElement, hotspotX = 0, hotspotY = 0) {
   const i32 = (v: number) => { view.setInt32(offset, v, true); offset += 4; };
   u16(0); u16(2); u16(1);
   view.setUint8(offset++, width >= 256 ? 0 : width); view.setUint8(offset++, height >= 256 ? 0 : height); view.setUint8(offset++, 0); view.setUint8(offset++, 0);
-  u16(hotspotX); u16(hotspotY); u32(16 + dibSize + imageSize); u32(6 + 16);
+  // CUR directory bytesInRes counts only the DIB image payload, not the 16-byte directory entry.
+  u16(Math.max(0, Math.min(0xffff, hotspotX))); u16(Math.max(0, Math.min(0xffff, hotspotY))); u32(dibSize + imageSize); u32(6 + 16);
   u32(dibSize); i32(width); i32(height * 2); u16(1); u16(32); u32(0); u32(imageSize); i32(0); i32(0); u32(0); u32(0);
   for (let y = height - 1; y >= 0; y--) for (let x = 0; x < width; x++) {
     const p = (y * width + x) * 4; view.setUint8(offset++, rgba[p + 2]); view.setUint8(offset++, rgba[p + 1]); view.setUint8(offset++, rgba[p]); view.setUint8(offset++, rgba[p + 3]);
   }
   const mask = new Uint8Array(buffer, offset, rowBytes * height); mask.fill(0);
+  // Write a valid 1-bit AND mask for fully transparent pixels; opaque pixels remain 0.
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const alpha = rgba[((height - 1 - y) * width + x) * 4 + 3];
+    if (alpha === 0) mask[y * rowBytes + Math.floor(x / 8)] |= 0x80 >> (x % 8);
+  }
   return new Blob([buffer], { type: "image/x-icon" });
 }
 
