@@ -46,3 +46,13 @@ button { cursor:pointer; }
 .nudge-grid button:hover { background: #dce6ff; }
 .nudge-grid button:active { transform: scale(.96); }
 @media (max-width: 760px) { .prompt-strip { flex-direction: column; } .prompt-strip button { width: 100%; justify-content: center; } }
+
+
+.theme-strip { margin: 0 0 .8rem; display: grid; grid-template-columns: minmax(220px, 1fr) minmax(220px, 1.2fr) auto auto; gap: .75rem; align-items: center; }
+.theme-strip select { min-height: 2.45rem; border: 1px solid rgba(22,25,31,.24); background: #f7f4ed; color: #18233b; padding: .55rem .7rem; font: 600 .78rem/1.2 "IBM Plex Mono", monospace; }
+.character-note { min-width: 0; border-left: 2px solid #de4a39; padding: .35rem .65rem; background: rgba(255,255,255,.38); }
+.character-note span { display: block; color: #777b83; font: .62rem/1.2 "IBM Plex Mono", monospace; letter-spacing: .1em; text-transform: uppercase; }
+.character-note b { display: block; margin-top: .22rem; color: #272a31; font-size: .78rem; line-height: 1.35; }
+.theme-generate { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.45rem; white-space: nowrap; }
+@media (max-width: 980px) { .theme-strip { grid-template-columns: 1fr 1fr; } .theme-strip > :first-child { grid-column: 1 / -1; } .character-note { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .theme-strip { grid-template-columns: 1fr; } .theme-strip > * { grid-column: auto !important; } .theme-generate { justify-content: center; width: 100%; } }
