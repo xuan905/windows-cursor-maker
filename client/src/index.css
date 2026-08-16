@@ -194,3 +194,17 @@ button { cursor:pointer; }
 .history-item-actions button { padding:.4rem; }
 .history-item-actions button:first-child { padding-inline:.55rem; }
 @media (max-width:760px) { .status-strip { align-items:flex-start; flex-wrap:wrap; } .status-progress { flex-basis:100%; width:100%; margin-left:0; } .appearance-fields { grid-template-columns:1fr; } .appearance-editor-actions { align-items:flex-start; flex-direction:column; } .prompt-actions { justify-content:stretch; width:100%; } .prompt-actions button { flex:1 1 100%; justify-content:center; } .history-item { grid-template-columns:2.8rem minmax(0,1fr); } .history-item img { width:2.8rem; height:2.8rem; } .history-item-actions { grid-column:1 / -1; justify-content:flex-end; } }
+
+
+.history-filters { display:flex; align-items:center; flex-wrap:wrap; gap:.5rem; margin-top:.7rem; padding:.65rem; border:1px solid rgba(22,25,31,.12); background:rgba(247,244,237,.75); }
+.history-filters input[type="search"], .history-filters select { min-height:2.25rem; min-width:12rem; flex:1 1 15rem; border:1px solid var(--line); background:#fffdf8; color:#18233b; padding:.45rem .6rem; font:600 .68rem 'IBM Plex Mono',monospace; }
+.history-filters select { flex:0 1 13rem; }
+.favorite-filter { display:inline-flex; align-items:center; gap:.35rem; color:#18233b; font:600 .68rem 'IBM Plex Mono',monospace; white-space:nowrap; }
+.favorite-filter input { accent-color:var(--blue); }
+.history-filters > span { color:var(--muted); font:600 .65rem 'IBM Plex Mono',monospace; white-space:nowrap; }
+.history-filters > button { border:1px solid rgba(22,25,31,.2); background:#f7f4ed; color:var(--blue); padding:.45rem .6rem; font:600 .66rem 'IBM Plex Mono',monospace; cursor:pointer; }
+.history-item details { margin-top:.35rem; color:var(--blue); font:.63rem 'IBM Plex Mono',monospace; }
+.history-item details summary { cursor:pointer; }
+.history-item details pre { max-height:8rem; overflow:auto; white-space:pre-wrap; margin:.35rem 0; padding:.45rem; background:rgba(36,87,214,.04); color:#4d5260; font:500 .65rem/1.4 'IBM Plex Mono',monospace; }
+.history-item details code { display:block; overflow-wrap:anywhere; color:#596274; font:500 .62rem/1.35 'IBM Plex Mono',monospace; }
+@media (max-width:760px) { .history-filters { align-items:stretch; flex-direction:column; } .history-filters input[type="search"], .history-filters select { width:100%; min-width:0; flex-basis:auto; } .favorite-filter { min-height:2.25rem; } .history-filters > span { padding:.2rem 0; } .history-filters > button { width:100%; } }
