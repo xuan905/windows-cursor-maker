@@ -13,7 +13,7 @@ describe("standard prompt", () => {
     expect(prompt).toContain("edge-connected pure green background");
     expect(prompt).toContain("output true transparent RGBA");
     expect(prompt).toContain("純綠色（#00FF00）");
-    expect(prompt).toContain("真正透明的 RGBA");
+    expect(prompt).toContain("生成請使用純綠色（#00FF00）作為暫時去背背景");
     expect(prompt).toContain("Row order: 1–5 standard select");
     expect(prompt).toContain("建立一個乾淨的 5×3 PNG 精靈圖");
     expect(prompt).toContain("四邊 12% 的可見安全邊距");
