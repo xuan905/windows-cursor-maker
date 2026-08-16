@@ -58,6 +58,27 @@ describe("removeConnectedBackground", () => {
     for (const [x, y] of white) expect(output[(y * width + x) * 4 + 3]).toBe(255);
   });
 
+  it("supports red, yellow, green, and blue chroma-key backgrounds", () => {
+    const colors = [
+      { r: 255, g: 0, b: 0 },
+      { r: 255, g: 255, b: 0 },
+      { r: 0, g: 255, b: 0 },
+      { r: 0, g: 0, b: 255 },
+    ];
+    for (const color of colors) {
+      const width = 7;
+      const data = pixels(width, width, [color.r, color.g, color.b, 255]);
+      for (let y = 2; y <= 4; y += 1) for (let x = 2; x <= 4; x += 1) data.set([20, 30, 40, 255], (y * width + x) * 4);
+      const subject = (2 * width + 2) * 4;
+      const enclosed = (3 * width + 3) * 4;
+      data.set([color.r, color.g, color.b, 255], enclosed);
+      const output = removeConnectedBackground(data, width, width, { backgroundColor: color });
+      expect(output[3]).toBe(0);
+      expect(output[subject + 3]).toBe(255);
+      expect(output[enclosed + 3]).toBe(255);
+    }
+  });
+
   it("rejects invalid pixel dimensions", () => {
     expect(() => removeConnectedBackground(new Uint8ClampedArray(3), 1, 1)).toThrow("尺寸");
   });

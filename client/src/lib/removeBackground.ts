@@ -3,6 +3,7 @@ export type BackgroundRemovalOptions = {
   greenThreshold?: number;
   pureGreenTolerance?: number;
   alphaThreshold?: number;
+  backgroundColor?: { r: number; g: number; b: number };
 };
 
 function isNearNeutral(r: number, g: number, b: number, tolerance: number) {
@@ -13,9 +14,12 @@ function isBackgroundCandidate(r: number, g: number, b: number, a: number, optio
   if (a <= options.alphaThreshold) return true;
   const brightness = (r + g + b) / 3;
   const lightNeutral = isNearNeutral(r, g, b, options.colorTolerance) && brightness >= 190;
-  const pureGreen = Math.abs(r - 0) <= options.pureGreenTolerance && Math.abs(g - 255) <= options.pureGreenTolerance && Math.abs(b - 0) <= options.pureGreenTolerance;
-  const greenScreenFallback = g >= options.greenThreshold && g > r * 1.08 && g > b * 1.04;
-  return lightNeutral || pureGreen || greenScreenFallback;
+  const target = options.backgroundColor;
+  const targetDistance = Math.abs(r - target.r) + Math.abs(g - target.g) + Math.abs(b - target.b);
+  const pureTarget = targetDistance <= options.pureGreenTolerance * 3;
+  const targetFallback = targetDistance <= options.colorTolerance * 3;
+  const greenScreenFallback = target.g === 255 && target.r === 0 && target.b === 0 && g >= options.greenThreshold && g > r * 1.08 && g > b * 1.04;
+  return lightNeutral || pureTarget || targetFallback || greenScreenFallback;
 }
 
 export function removeConnectedBackground(
@@ -26,7 +30,7 @@ export function removeConnectedBackground(
 ) {
   if (source.length !== width * height * 4) throw new Error("圖片像素資料尺寸不一致");
   if (width <= 0 || height <= 0) throw new Error("圖片尺寸必須大於 0");
-  const config = { colorTolerance: 18, greenThreshold: 90, pureGreenTolerance: 0, alphaThreshold: 10, ...options };
+  const config = { colorTolerance: 18, greenThreshold: 90, pureGreenTolerance: 0, alphaThreshold: 10, backgroundColor: { r: 0, g: 255, b: 0 }, ...options };
   const output = new Uint8ClampedArray(source);
   const visited = new Uint8Array(width * height);
   const queue: number[] = [];

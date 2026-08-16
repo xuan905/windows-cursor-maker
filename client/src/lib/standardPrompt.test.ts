@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildStandardPrompt } from "./standardPrompt";
+import { getChromaKeyColor } from "./chromaKeyColors";
 
 describe("standard prompt", () => {
   it("contains the required bilingual sprite-sheet production contract", () => {
@@ -19,6 +20,13 @@ describe("standard prompt", () => {
     expect(prompt).toContain("四邊 12% 的可見安全邊距");
     expect(prompt).toContain("行順序：1–5 行為標準選擇");
     expect(prompt).toContain("一拳超人 Q 版崎玉老師");
+  });
+
+  it("updates the bilingual chroma-key instruction for a selected color", () => {
+    const prompt = buildStandardPrompt("原創 Q 版角色", getChromaKeyColor("red"));
+    expect(prompt).toContain("red chroma-key background (#FF0000)");
+    expect(prompt).toContain("純紅色（#FF0000）");
+    expect(prompt).not.toContain("純綠色（#00FF00）作為暫時去背背景");
   });
 
   it("does not retain the incomplete or contradictory legacy wording", () => {
