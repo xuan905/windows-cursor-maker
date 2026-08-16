@@ -79,6 +79,15 @@ describe("removeConnectedBackground", () => {
     }
   });
 
+  it("removes compressed and anti-aliased red-screen near-colors from the edge", () => {
+    const data = pixels(5, 5, [230, 14, 12, 255]);
+    const subject = (2 * 5 + 2) * 4;
+    data.set([20, 30, 40, 255], subject);
+    const output = removeConnectedBackground(data, 5, 5, { backgroundColor: { r: 255, g: 0, b: 0 } });
+    expect(output[3]).toBe(0);
+    expect(output[subject + 3]).toBe(255);
+  });
+
   it("rejects invalid pixel dimensions", () => {
     expect(() => removeConnectedBackground(new Uint8ClampedArray(3), 1, 1)).toThrow("尺寸");
   });

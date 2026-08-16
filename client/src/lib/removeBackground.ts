@@ -30,7 +30,7 @@ export function removeConnectedBackground(
 ) {
   if (source.length !== width * height * 4) throw new Error("圖片像素資料尺寸不一致");
   if (width <= 0 || height <= 0) throw new Error("圖片尺寸必須大於 0");
-  const config = { colorTolerance: 18, greenThreshold: 90, pureGreenTolerance: 0, alphaThreshold: 10, backgroundColor: { r: 0, g: 255, b: 0 }, ...options };
+  const config = { colorTolerance: 24, greenThreshold: 90, pureGreenTolerance: 0, alphaThreshold: 10, backgroundColor: { r: 0, g: 255, b: 0 }, ...options };
   const output = new Uint8ClampedArray(source);
   const visited = new Uint8Array(width * height);
   const queue: number[] = [];
