@@ -20,13 +20,42 @@ describe("removeConnectedBackground", () => {
     expect(output[innerWhite + 3]).toBe(0);
   });
 
-  it("removes edge-connected green screen while retaining a colored subject", () => {
-    const data = pixels(4, 4, [30, 210, 30, 255]);
+  it("removes edge-connected pure #00FF00 background while retaining a colored subject", () => {
+    const data = pixels(4, 4, [0, 255, 0, 255]);
     const subject = (1 * 4 + 1) * 4;
     data.set([240, 80, 40, 255], subject);
     const output = removeConnectedBackground(data, 4, 4);
     expect(output[3]).toBe(0);
     expect(output[subject + 3]).toBe(255);
+  });
+
+  it("keeps enclosed green details and black work-item outlines inside a subject", () => {
+    const data = pixels(7, 7, [0, 255, 0, 255]);
+    for (let y = 2; y <= 4; y += 1) {
+      for (let x = 2; x <= 4; x += 1) data.set([240, 80, 40, 255], (y * 7 + x) * 4);
+    }
+    const enclosedGreen = (3 * 7 + 3) * 4;
+    data.set([0, 255, 0, 255], enclosedGreen);
+    const blackOutline = (2 * 7 + 2) * 4;
+    data.set([0, 0, 0, 255], blackOutline);
+    const output = removeConnectedBackground(data, 7, 7);
+    expect(output[3]).toBe(0);
+    expect(output[enclosedGreen + 3]).toBe(255);
+    expect(output[blackOutline + 3]).toBe(255);
+  });
+
+  it("preserves a multi-pixel white-fill black-outline work-item arrow inside pure green background", () => {
+    const width = 11;
+    const data = pixels(width, 11, [0, 255, 0, 255]);
+    const black = [[3, 3], [3, 4], [3, 5], [4, 3], [4, 5], [5, 3], [5, 5], [6, 3], [6, 4], [6, 5]];
+    const white = [[4, 4], [5, 4]];
+    const setPixel = (x: number, y: number, fill: [number, number, number, number]) => data.set(fill, (y * width + x) * 4);
+    for (const [x, y] of black) setPixel(x, y, [0, 0, 0, 255]);
+    for (const [x, y] of white) setPixel(x, y, [255, 255, 255, 255]);
+    const output = removeConnectedBackground(data, width, 11);
+    expect(output[3]).toBe(0);
+    for (const [x, y] of black) expect(output[(y * width + x) * 4 + 3]).toBe(255);
+    for (const [x, y] of white) expect(output[(y * width + x) * 4 + 3]).toBe(255);
   });
 
   it("rejects invalid pixel dimensions", () => {

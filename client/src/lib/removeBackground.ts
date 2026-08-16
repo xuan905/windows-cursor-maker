@@ -1,6 +1,7 @@
 export type BackgroundRemovalOptions = {
   colorTolerance?: number;
   greenThreshold?: number;
+  pureGreenTolerance?: number;
   alphaThreshold?: number;
 };
 
@@ -12,8 +13,9 @@ function isBackgroundCandidate(r: number, g: number, b: number, a: number, optio
   if (a <= options.alphaThreshold) return true;
   const brightness = (r + g + b) / 3;
   const lightNeutral = isNearNeutral(r, g, b, options.colorTolerance) && brightness >= 190;
-  const greenScreen = g >= options.greenThreshold && g > r * 1.08 && g > b * 1.04;
-  return lightNeutral || greenScreen;
+  const pureGreen = Math.abs(r - 0) <= options.pureGreenTolerance && Math.abs(g - 255) <= options.pureGreenTolerance && Math.abs(b - 0) <= options.pureGreenTolerance;
+  const greenScreenFallback = g >= options.greenThreshold && g > r * 1.08 && g > b * 1.04;
+  return lightNeutral || pureGreen || greenScreenFallback;
 }
 
 export function removeConnectedBackground(
@@ -24,7 +26,7 @@ export function removeConnectedBackground(
 ) {
   if (source.length !== width * height * 4) throw new Error("圖片像素資料尺寸不一致");
   if (width <= 0 || height <= 0) throw new Error("圖片尺寸必須大於 0");
-  const config = { colorTolerance: 18, greenThreshold: 90, alphaThreshold: 10, ...options };
+  const config = { colorTolerance: 18, greenThreshold: 90, pureGreenTolerance: 0, alphaThreshold: 10, ...options };
   const output = new Uint8ClampedArray(source);
   const visited = new Uint8Array(width * height);
   const queue: number[] = [];
