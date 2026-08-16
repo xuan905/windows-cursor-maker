@@ -15,4 +15,19 @@ describe("cursor.generateSheet", () => {
       caller.cursor.generateSheet({ theme: "", character: "", prompt: "too short" }),
     ).rejects.toThrow();
   });
+
+  it("rejects non-HTTPS reference image URLs before fetching them", async () => {
+    const caller = appRouter.createCaller({ user: null, req: {} as never, res: {} as never });
+    await expect(caller.cursor.uploadReferenceUrl({ imageUrl: "http://example.com/reference.png" })).rejects.toThrow("HTTPS");
+  });
+
+  it("rejects non-image HTTPS reference URLs before storing them", async () => {
+    const caller = appRouter.createCaller({ user: null, req: {} as never, res: {} as never });
+    await expect(caller.cursor.uploadReferenceUrl({ imageUrl: "https://example.com/reference.txt" })).rejects.toThrow();
+  });
+
+  it.each(["https://localhost/reference.png", "https://127.0.0.1/reference.png", "https://169.254.169.254/latest/meta-data/"])("rejects private or metadata reference host %s", async (imageUrl) => {
+    const caller = appRouter.createCaller({ user: null, req: {} as never, res: {} as never });
+    await expect(caller.cursor.uploadReferenceUrl({ imageUrl })).rejects.toThrow("公開");
+  });
 });

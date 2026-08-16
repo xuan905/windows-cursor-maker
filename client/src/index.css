@@ -121,3 +121,44 @@ button { cursor:pointer; }
 .dynamic-tune-row input { width:140px; accent-color:var(--blue); }
 .single-row-status { display:inline-block; margin:.35rem 0 0; color:#56875c; font:.65rem 'IBM Plex Mono'; letter-spacing:.05em; }
 @media (max-width:760px) { .dynamic-generator-head { display:block; } .dynamic-actions { justify-content:flex-start; margin-top:1rem; } .dynamic-actions button,.dynamic-actions select { flex:1; } .dynamic-sheet-row { grid-template-columns:1fr; } .dynamic-row-label { min-height:auto; } .dynamic-preview-row { grid-template-columns:repeat(5, minmax(52px, 1fr)); gap:.35rem; } }
+
+
+.reference-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.reference-url-loader {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1 1 28rem;
+  min-width: min(100%, 18rem);
+}
+
+.reference-url-loader input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 1px solid var(--line, #cfcac0);
+  background: #fffdf8;
+  color: #1d2027;
+  padding: 0.58rem 0.7rem;
+  font: inherit;
+}
+
+.reference-actions small {
+  flex-basis: 100%;
+  color: #6d6a64;
+  font-size: 0.72rem;
+}
+
+@media (max-width: 720px) {
+  .reference-url-loader {
+    flex-basis: 100%;
+  }
+  .reference-url-loader button {
+    white-space: nowrap;
+  }
+}
