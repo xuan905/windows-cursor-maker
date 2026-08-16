@@ -193,7 +193,13 @@
 
 ## README 與 GitHub 上傳
 
-- [ ] 建立繁體中文 README.md，說明功能、操作流程、開發指令、輸出格式、權限與安全限制。
-- [ ] 檢查 README 與 git 將不包含 `.env`、token、密鑰、使用者資料或不應上傳的生成檔案。
-- [ ] 建立或確認 GitHub 私有 repository，提交並推送最新專案內容。
-- [ ] 驗證遠端 repository 的 README、分支與最新 commit 可正常讀取。
+- [x] 建立繁體中文 README.md，說明功能、操作流程、開發指令、輸出格式、權限與安全限制。
+- [x] 檢查 README 與 git 將不包含 `.env`、token、密鑰、使用者資料或不應上傳的生成檔案。
+- [x] 建立或確認 GitHub 私有 repository，提交並推送最新專案內容。
+- [x] 驗證遠端 repository 的 README、分支與最新 commit 可正常讀取。
+
+
+## GitHub 上傳完整性補充
+
+- [x] 完整盤點已追蹤檔案，確認 145 個已追蹤檔案不含環境設定、token、密鑰、使用者個資、截圖、log、build 輸出或 CUR／ANI／圖片生成檔案；文字內容敏感模式掃描未命中。
+- [x] 重新驗證 GitHub default branch 為 `main`、遠端最新 commit 為 `fc0627198e9ede068fd57c8dbd67ed1ac0570e38`，且 GitHub API 可讀取 `README.md`。
