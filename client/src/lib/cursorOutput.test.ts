@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   CURSOR_OUTPUT_SIZE,
   CURSOR_SHEET_COLUMNS,
+  CURSOR_SHEET_HEIGHT,
+  CURSOR_SHEET_WIDTH,
   CURSOR_SHEET_ROWS,
   isCursorOutputSize,
 } from "./cursorOutput";
@@ -15,7 +17,9 @@ describe("cursor output size contract", () => {
   });
 
   it("defines the normalized 5×3 sheet as 640×384", () => {
-    expect(CURSOR_SHEET_COLUMNS * CURSOR_OUTPUT_SIZE).toBe(640);
-    expect(CURSOR_SHEET_ROWS * CURSOR_OUTPUT_SIZE).toBe(384);
+    expect(CURSOR_SHEET_WIDTH).toBe(640);
+    expect(CURSOR_SHEET_HEIGHT).toBe(384);
+    expect(CURSOR_SHEET_WIDTH).toBe(CURSOR_SHEET_COLUMNS * CURSOR_OUTPUT_SIZE);
+    expect(CURSOR_SHEET_HEIGHT).toBe(CURSOR_SHEET_ROWS * CURSOR_OUTPUT_SIZE);
   });
 });
