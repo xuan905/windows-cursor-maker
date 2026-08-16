@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { CursorPromptHistory, InsertCursorPromptHistory, InsertUser, cursorPromptHistory, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,30 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function listCursorPromptHistory(userId: number): Promise<CursorPromptHistory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(cursorPromptHistory).where(eq(cursorPromptHistory.userId, userId)).orderBy(desc(cursorPromptHistory.createdAt));
+}
+
+export async function insertCursorPromptHistory(input: InsertCursorPromptHistory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const result = await db.insert(cursorPromptHistory).values(input);
+  return Number(result[0].insertId);
+}
+
+export async function setCursorPromptFavorite(userId: number, id: number, isFavorite: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.update(cursorPromptHistory).set({ isFavorite }).where(and(eq(cursorPromptHistory.id, id), eq(cursorPromptHistory.userId, userId)));
+  const rows = await db.select().from(cursorPromptHistory).where(eq(cursorPromptHistory.userId, userId));
+  return rows.find((row) => row.id === id) ?? null;
+}
+
+export async function deleteCursorPromptHistory(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.delete(cursorPromptHistory).where(and(eq(cursorPromptHistory.id, id), eq(cursorPromptHistory.userId, userId)));
+  return true;
+}

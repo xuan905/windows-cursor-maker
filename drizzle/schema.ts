@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -25,4 +25,18 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+export const cursorPromptHistory = mysqlTable("cursorPromptHistory", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  imageUrl: text("imageUrl").notNull(),
+  prompt: text("prompt").notNull(),
+  appearanceJson: text("appearanceJson"),
+  theme: varchar("theme", { length: 100 }).notNull(),
+  isFavorite: boolean("isFavorite").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CursorPromptHistory = typeof cursorPromptHistory.$inferSelect;
+export type InsertCursorPromptHistory = typeof cursorPromptHistory.$inferInsert;

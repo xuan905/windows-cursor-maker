@@ -1,10 +1,11 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { generateImage } from "./_core/imageGeneration";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
+import { deleteCursorPromptHistory, insertCursorPromptHistory, listCursorPromptHistory, setCursorPromptFavorite } from "./db";
 import { z } from "zod";
 import { lookup } from "node:dns/promises";
 import net from "node:net";
@@ -45,6 +46,18 @@ export const appRouter = router({
   }),
 
   cursor: router({
+    history: router({
+      list: protectedProcedure.query(({ ctx }) => listCursorPromptHistory(ctx.user.id)),
+      create: protectedProcedure
+        .input(z.object({ title: z.string().min(1).max(180), imageUrl: z.string().url().max(15_000_000), prompt: z.string().min(40).max(20_000), theme: z.string().min(1).max(100), appearance: z.record(z.string(), z.string()).optional() }))
+        .mutation(async ({ input, ctx }) => ({ id: await insertCursorPromptHistory({ userId: ctx.user.id, title: input.title, imageUrl: input.imageUrl, prompt: input.prompt, theme: input.theme, appearanceJson: input.appearance ? JSON.stringify(input.appearance) : null }) })),
+      toggleFavorite: protectedProcedure
+        .input(z.object({ id: z.number().int().positive(), isFavorite: z.boolean() }))
+        .mutation(({ input, ctx }) => setCursorPromptFavorite(ctx.user.id, input.id, input.isFavorite)),
+      remove: protectedProcedure
+        .input(z.object({ id: z.number().int().positive() }))
+        .mutation(({ input, ctx }) => deleteCursorPromptHistory(ctx.user.id, input.id)),
+    }),
     uploadReference: publicProcedure
       .input(z.object({ dataUrl: z.string().regex(/^data:image\/(png|jpeg|webp);base64,/).max(15_000_000), mimeType: z.string().regex(/^image\/(png|jpeg|webp)$/), fileName: z.string().min(1).max(180) }))
       .mutation(async ({ input, ctx }) => {
