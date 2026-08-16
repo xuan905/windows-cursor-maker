@@ -203,3 +203,30 @@
 
 - [x] 完整盤點已追蹤檔案，確認 145 個已追蹤檔案不含環境設定、token、密鑰、使用者個資、截圖、log、build 輸出或 CUR／ANI／圖片生成檔案；文字內容敏感模式掃描未命中。
 - [x] 重新驗證 GitHub default branch 為 `main`、遠端最新 commit 為 `fc0627198e9ede068fd57c8dbd67ed1ac0570e38`，且 GitHub API 可讀取 `README.md`。
+
+
+## GitHub 公開設定
+
+- [x] 確認公開前 repository 名稱與 README 內容。
+- [x] 將 xuan905/windows-cursor-maker 可見性改為公開。
+- [x] 驗證公開狀態、公開 URL 與 README 可匿名讀取；GitHub 首頁與 raw README 均回傳 HTTP 200。
+
+
+## 公開後 README 核對補充
+
+- [x] 讀取公開 GitHub README 的前段與主要章節，確認 repository 名稱與文件內容一致。
+
+
+## 圖片直接進入裁切工作台
+
+- [x] 生成圖片完成後提供「直接裁切」按鈕，將來源圖載入 15 格裁切工作台。
+- [x] 上傳圖片流程提供明確的「載入並裁切」入口，套用同一套 5×3 安全框與調整狀態。
+- [x] 直接進入裁切時清除舊 CUR 預覽、重設必要的裁切狀態並保留輸出流程。
+- [x] 新增圖片載入／裁切流程測試，並完成桌面與 390px 手機版視覺回歸；TypeScript、30 項 Vitest 與正式建置通過，桌面／390px 入口布局已確認。
+
+
+## 直接裁切流程驗證補充
+
+- [x] 抽出可測試的 openCropWorkbench 狀態轉換 helper，覆蓋 active、tunes、hotspot、CUR 預覽清除與工作台切換。
+- [x] 新增直接裁切流程單元測試，覆蓋上傳 PNG 與動態 5×3 圖載入後的 image source 更新。
+- [x] 在瀏覽器實際點擊「直接進入裁切」，確認顯示已載入 15 格裁切工作台，15 格預覽、微調控制與 PNG／CUR ZIP 輸出入口仍可用；「上傳並直接裁切圖片」入口已在頁面可見，動態入口會在生成 5×3 圖後顯示。
