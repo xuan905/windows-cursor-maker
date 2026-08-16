@@ -208,3 +208,33 @@ button { cursor:pointer; }
 .history-item details pre { max-height:8rem; overflow:auto; white-space:pre-wrap; margin:.35rem 0; padding:.45rem; background:rgba(36,87,214,.04); color:#4d5260; font:500 .65rem/1.4 'IBM Plex Mono',monospace; }
 .history-item details code { display:block; overflow-wrap:anywhere; color:#596274; font:500 .62rem/1.35 'IBM Plex Mono',monospace; }
 @media (max-width:760px) { .history-filters { align-items:stretch; flex-direction:column; } .history-filters input[type="search"], .history-filters select { width:100%; min-width:0; flex-basis:auto; } .favorite-filter { min-height:2.25rem; } .history-filters > span { padding:.2rem 0; } .history-filters > button { width:100%; } }
+
+
+/* Background removal before/after comparison */
+.background-compare { margin: 1rem 0; padding: 1rem; border: 1px solid var(--border); background: var(--card); }
+.background-compare-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin-bottom: .75rem; }
+.background-compare-head > div { display: grid; gap: .18rem; }
+.background-compare-head strong { font-size: 1rem; }
+.background-compare-head small { color: var(--muted-foreground); }
+.background-compare-head button, .background-compare-footer button { border: 1px solid var(--border); background: var(--background); padding: .45rem .7rem; cursor: pointer; }
+.background-compare-stage { position: relative; min-height: 220px; overflow: hidden; isolation: isolate; touch-action: none; background-color: #f5f5f5; background-image: linear-gradient(45deg, #dedede 25%, transparent 25%), linear-gradient(-45deg, #dedede 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #dedede 75%), linear-gradient(-45deg, transparent 75%, #dedede 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0; }
+.background-compare-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+.background-compare-original { z-index: 1; }
+.background-compare-processed { position: absolute; inset: 0 auto 0 0; overflow: hidden; z-index: 2; border-right: 2px solid #245bd6; }
+.background-compare-processed .background-compare-image { width: 100cqw; max-width: none; }
+.background-compare-stage { container-type: inline-size; }
+.background-compare-handle { position: absolute; z-index: 4; top: 0; bottom: 0; width: 28px; transform: translateX(-50%); border: 0; padding: 0; background: transparent; cursor: ew-resize; touch-action: none; }
+.background-compare-handle span { display: block; width: 4px; height: 100%; margin: 0 auto; background: #245bd6; box-shadow: 0 0 0 1px rgba(255,255,255,.85); }
+.background-compare-tag { position: absolute; z-index: 5; top: .65rem; padding: .25rem .45rem; background: rgba(20, 24, 32, .84); color: white; font-size: .7rem; letter-spacing: .08em; }
+.background-compare-before { left: .65rem; }
+.background-compare-after { right: .65rem; }
+.background-compare-footer { display: flex; align-items: center; gap: .65rem; margin-top: .75rem; font-size: .78rem; }
+.background-compare-footer input { flex: 1; accent-color: #245bd6; }
+@media (max-width: 640px) {
+  .background-compare { padding: .7rem; }
+  .background-compare-head { flex-direction: column; }
+  .background-compare-head button { align-self: flex-start; }
+  .background-compare-stage { min-height: 180px; }
+  .background-compare-footer { flex-wrap: wrap; }
+  .background-compare-footer input { order: 3; flex-basis: 100%; }
+}
