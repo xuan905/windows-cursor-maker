@@ -242,4 +242,49 @@
 
 ## 標準 Prompt 版本保存補充
 
-- [ ] 保存本輪中英文標準 Prompt 與一拳超人 Q 版預設角色的 checkpoint。
+- [x] 保存本輪中英文標準 Prompt 與一拳超人 Q 版預設角色的 checkpoint。
+
+
+## 目前圖片去背透明化
+
+- [x] 抽出可測試的瀏覽器端去背透明化 helper，處理白色、灰色與綠幕背景像素。
+- [x] 在目前圖片預覽與裁切工作台加入「去背透明化」與「復原原圖」操作。
+- [x] 去背後更新透明 PNG 來源，讓直接裁切與 PNG／CUR ZIP 輸出使用去背結果。
+- [x] 加入處理中狀態、成功／失敗提示與避免重複處理。
+- [x] 新增像素與狀態流程測試，完成 390px／1280px 回歸、型別檢查、37 項 Vitest、正式建置、瀏覽器點擊驗證與 checkpoint。
+
+
+## 去背流程缺口修正
+
+- [x] 為動態工作區獨立保存原始 5×3 圖片來源，確保去背後復原回同一張動態大圖。
+- [x] 新增去背狀態流程 helper 測試，覆蓋開始處理、成功、失敗、復原與避免重複提交。
+- [x] 補測試標準／動態來源切換後，各自更新正確的透明圖片來源。
+
+
+## 去背工作台整合驗證
+
+- [x] 新增可測試的工作台來源更新 helper，覆蓋 sheet 更新 imageSrc、dynamic 更新 dynamicImageSrc，並驗證不互相覆寫。
+- [x] 新增動態去背→復原整合測試，確認 dynamicOriginalImageSrc 還原為當前 5×3 原圖，而非標準工作台圖片。
+
+
+## Home 去背整合測試補充
+
+- [x] 抽出 Home 可共用的去背工作台狀態轉換流程，讓整合測試可直接模擬 dynamic 原圖設定、去背、復原與分頁切換。
+- [x] 新增工作台層級整合測試，驗證 dynamicOriginalImageSrc、dynamicImageSrc 的完整生命週期，且不誤寫 sheet imageSrc。
+
+
+## Home controller 直接整合驗證
+
+- [x] 建立 Home 去背 controller，直接接收 workspaceTab 與圖片 setter，供 Home 實際 handler 與整合測試共用。
+- [x] 以 controller 測試直接驗證 dynamic 設定／去背／復原，以及 sheet／dynamic 切換不互相寫入。
+
+
+## 去背 controller 統一路徑
+
+- [x] 讓 Home sheet 與 dynamic 的去背／復原分支都使用 homeBackgroundController。
+- [x] 補上同一 controller 覆蓋 sheet 與 dynamic 更新／復原的契約測試。
+
+
+## Home controller sheet 復原補充
+
+- [x] 新增 homeBackgroundController 測試，覆蓋 sheet 去背後復原到 sheetOriginalSource，且 dynamicSource 保持不變。
