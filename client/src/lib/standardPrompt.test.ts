@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildStandardPrompt } from "./standardPrompt";
+import { buildStandardPrompt, buildStandardV2Prompt } from "./standardPrompt";
 import { getChromaKeyColor } from "./chromaKeyColors";
 
 describe("standard prompt", () => {
@@ -33,5 +33,15 @@ describe("standard prompt", () => {
     const prompt = buildStandardPrompt("一拳超人 Q 版崎玉老師");
     expect(prompt).not.toContain("Use one  with a compact silhouette");
     expect(prompt).not.toContain("Keep this character original and do not copy any existing franchise");
+  });
+
+  it("builds version two with Genos direction and all 15 actions", () => {
+    const prompt = buildStandardV2Prompt();
+    expect(prompt).toContain("傑諾斯");
+    expect(prompt).toContain("128×128");
+    expect(prompt).toContain("640×384");
+    expect(prompt).toContain("純綠色");
+    expect(prompt).toContain("雙掌向前猛烈發射熾熱的火焰焚燒炮");
+    expect(prompt).toContain("雙手捧著一個發光的 3D 立體全息地圖投影進行掃描");
   });
 });
