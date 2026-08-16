@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { generateImage } from "./_core/imageGeneration";
+import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
 import { z } from "zod";
 import { lookup } from "node:dns/promises";
@@ -20,9 +21,10 @@ function isPrivateIp(address: string) {
   return true;
 }
 
-async function assertPublicImageUrl(imageUrl: string) {
+async function assertPublicImageUrl(imageUrl: string, allowedStorageHost?: string) {
   const parsed = new URL(imageUrl);
   const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (allowedStorageHost && hostname === allowedStorageHost.toLowerCase() && parsed.pathname.startsWith("/manus-storage/")) return;
   if (hostname === "localhost" || hostname.endsWith(".localhost") || hostname === "metadata.google.internal" || hostname.endsWith(".local") || hostname.endsWith(".internal") || isPrivateIp(hostname)) throw new Error("圖片網址主機不是公開網路位置");
   const records = await lookup(hostname, { all: true, verbatim: true });
   if (!records.length || records.some((record) => isPrivateIp(record.address))) throw new Error("圖片網址解析到非公開網路位置");
@@ -72,6 +74,47 @@ export const appRouter = router({
         const protocol = forwardedProto || (ctx.req as any).protocol || "https";
         const host = ctx.req.headers?.host || "localhost";
         return { ...stored, url: `${protocol}://${host}${stored.url}`, mimeType: contentType, fileName: input.fileName, sourceUrl: input.imageUrl };
+      }),
+    analyzeReference: publicProcedure
+      .input(z.object({ url: z.string().url().max(15_000_000), mimeType: z.string().regex(/^image\/(png|jpeg|webp)$/) }))
+      .mutation(async ({ input, ctx }) => {
+        const allowedStorageHost = String(ctx.req.headers?.host || "").split(":")[0];
+        await assertPublicImageUrl(input.url, allowedStorageHost);
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "你是角色設計分析助手。只描述圖片中可辨識的角色外觀，不猜測姓名、品牌、版權角色或背景故事；若看不清楚，使用中性且保守的描述。" },
+            { role: "user", content: [
+              { type: "text", text: "請分析這張人物參考圖，輸出可直接放入 AI 繪圖 Prompt 的繁體中文外觀特徵。聚焦髮型、髮色、臉型與表情、服裝輪廓、服裝配色、配件、身形比例、主要辨識特徵；忽略背景、文字與浮水印。" },
+              { type: "image_url", image_url: { url: input.url, detail: "low" } },
+            ] },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "cursor_reference_appearance",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  hairstyle: { type: "string" },
+                  hairColor: { type: "string" },
+                  faceAndExpression: { type: "string" },
+                  clothing: { type: "string" },
+                  palette: { type: "string" },
+                  accessories: { type: "string" },
+                  proportions: { type: "string" },
+                  identityTraits: { type: "string" },
+                },
+                required: ["hairstyle", "hairColor", "faceAndExpression", "clothing", "palette", "accessories", "proportions", "identityTraits"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        const content = response.choices?.[0]?.message?.content;
+        if (typeof content !== "string") throw new Error("參考圖外觀分析沒有回傳有效內容");
+        const appearance = JSON.parse(content) as Record<string, string>;
+        return appearance;
       }),
     generateSheet: publicProcedure
       .input(z.object({ theme: z.string().min(1).max(80), character: z.string().min(1).max(120), prompt: z.string().min(40).max(12000), referenceImage: z.object({ url: z.string().min(1).max(15_000_000), mimeType: z.string().regex(/^image\/(png|jpeg|webp)$/) }).optional() }))
