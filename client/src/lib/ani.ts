@@ -10,7 +10,7 @@ export function encodeAni(frames: Uint8Array[], frameRate: number) {
   const anih = new Uint8Array(36);
   const view = new DataView(anih.buffer);
   view.setUint32(0, 36, true); view.setUint32(4, frames.length, true); view.setUint32(8, frames.length, true);
-  view.setUint32(12, 64, true); view.setUint32(16, 64, true); view.setUint32(20, 32, true); view.setUint32(24, 1, true);
+  view.setUint32(12, 128, true); view.setUint32(16, 128, true); view.setUint32(20, 32, true); view.setUint32(24, 1, true);
   view.setUint32(28, ticks, true); view.setUint32(32, 1, true);
   const fram = joinBytes(...frames.map((frame) => riffChunk("icon", frame)));
   const list = joinBytes(ascii("fram"), fram);

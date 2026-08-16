@@ -3,6 +3,7 @@ import JSZip from "jszip";
 import { getDynamicFrameIndices, getDynamicFrameSourceRect } from "../client/src/lib/dynamicSheet";
 import { cursorNames, cursorArrowSpecs, cursorArrowKinds, hasRequiredArrowStyle, inspectArrowRegion } from "../client/src/lib/cursorArrows";
 import { encodeAni } from "@/lib/ani";
+import { CURSOR_OUTPUT_SIZE } from "../client/src/lib/cursorOutput";
 
 function readAscii(bytes: Uint8Array, offset: number, length: number) {
   return new TextDecoder().decode(bytes.slice(offset, offset + length));
@@ -22,21 +23,21 @@ describe("dynamic work-item arrow specification", () => {
   });
 
   it("reports a traceable expected arrow kind for every cell", () => {
-    const pixels = new Uint8ClampedArray(64 * 64 * 4);
-    for (let i = 0; i < 64 * 64; i += 1) {
+    const pixels = new Uint8ClampedArray(CURSOR_OUTPUT_SIZE * CURSOR_OUTPUT_SIZE * 4);
+    for (let i = 0; i < CURSOR_OUTPUT_SIZE * CURSOR_OUTPUT_SIZE; i += 1) {
       pixels[i * 4] = 255;
       pixels[i * 4 + 1] = 255;
       pixels[i * 4 + 2] = 255;
       pixels[i * 4 + 3] = 255;
     }
-    const results = cursorArrowKinds.map((kind) => inspectArrowRegion(pixels, 64, 64, kind));
+    const results = cursorArrowKinds.map((kind) => inspectArrowRegion(pixels, CURSOR_OUTPUT_SIZE, CURSOR_OUTPUT_SIZE, kind));
     expect(results.map((result) => result.expectedKind)).toEqual([...cursorArrowKinds]);
   });
 
   it("detects white fill and black outline pixels inside the upper-left safe region", () => {
-    const pixels = new Uint8ClampedArray(64 * 64 * 4);
+    const pixels = new Uint8ClampedArray(CURSOR_OUTPUT_SIZE * CURSOR_OUTPUT_SIZE * 4);
     const paint = (x: number, y: number, r: number, g: number, b: number) => {
-      const offset = (y * 64 + x) * 4;
+      const offset = (y * CURSOR_OUTPUT_SIZE + x) * 4;
       pixels[offset] = r;
       pixels[offset + 1] = g;
       pixels[offset + 2] = b;
@@ -45,7 +46,7 @@ describe("dynamic work-item arrow specification", () => {
     paint(2, 2, 0, 0, 0);
     paint(3, 3, 0, 0, 0);
     paint(4, 4, 255, 255, 255);
-    const inspection = inspectArrowRegion(pixels, 64, 64);
+    const inspection = inspectArrowRegion(pixels, CURSOR_OUTPUT_SIZE, CURSOR_OUTPUT_SIZE);
     expect(inspection).toEqual({ present: true, whiteFill: true, blackOutline: true, diagonalShape: true, directionalMatch: true, expectedKind: "standard", insideSafeRegion: true });
   });
 });
@@ -66,17 +67,17 @@ describe("5x3 dynamic sheet row selection", () => {
   });
 
   it("returns the actual source rectangle for each row and frame", () => {
-    expect(getDynamicFrameSourceRect(1, 0, 64, 64)).toEqual({ sx: 0, sy: 0, sw: 64, sh: 64 });
-    expect(getDynamicFrameSourceRect(1, 4, 64, 64)).toEqual({ sx: 256, sy: 0, sw: 64, sh: 64 });
-    expect(getDynamicFrameSourceRect(2, 0, 64, 64)).toEqual({ sx: 0, sy: 64, sw: 64, sh: 64 });
-    expect(getDynamicFrameSourceRect(2, 4, 64, 64)).toEqual({ sx: 256, sy: 64, sw: 64, sh: 64 });
-    expect(getDynamicFrameSourceRect(3, 0, 64, 64)).toEqual({ sx: 0, sy: 128, sw: 64, sh: 64 });
-    expect(getDynamicFrameSourceRect(3, 4, 64, 64)).toEqual({ sx: 256, sy: 128, sw: 64, sh: 64 });
+    expect(getDynamicFrameSourceRect(1, 0, CURSOR_OUTPUT_SIZE, CURSOR_OUTPUT_SIZE)).toEqual({ sx: 0, sy: 0, sw: CURSOR_OUTPUT_SIZE, sh: CURSOR_OUTPUT_SIZE });
+    expect(getDynamicFrameSourceRect(1, 4, CURSOR_OUTPUT_SIZE, CURSOR_OUTPUT_SIZE)).toEqual({ sx: CURSOR_OUTPUT_SIZE * 4, sy: 0, sw: CURSOR_OUTPUT_SIZE, sh: CURSOR_OUTPUT_SIZE });
+    expect(getDynamicFrameSourceRect(2, 0, CURSOR_OUTPUT_SIZE, CURSOR_OUTPUT_SIZE)).toEqual({ sx: 0, sy: CURSOR_OUTPUT_SIZE, sw: CURSOR_OUTPUT_SIZE, sh: CURSOR_OUTPUT_SIZE });
+    expect(getDynamicFrameSourceRect(2, 4, CURSOR_OUTPUT_SIZE, CURSOR_OUTPUT_SIZE)).toEqual({ sx: CURSOR_OUTPUT_SIZE * 4, sy: CURSOR_OUTPUT_SIZE, sw: CURSOR_OUTPUT_SIZE, sh: CURSOR_OUTPUT_SIZE });
+    expect(getDynamicFrameSourceRect(3, 0, CURSOR_OUTPUT_SIZE, CURSOR_OUTPUT_SIZE)).toEqual({ sx: 0, sy: CURSOR_OUTPUT_SIZE * 2, sw: CURSOR_OUTPUT_SIZE, sh: CURSOR_OUTPUT_SIZE });
+    expect(getDynamicFrameSourceRect(3, 4, CURSOR_OUTPUT_SIZE, CURSOR_OUTPUT_SIZE)).toEqual({ sx: CURSOR_OUTPUT_SIZE * 4, sy: CURSOR_OUTPUT_SIZE * 2, sw: CURSOR_OUTPUT_SIZE, sh: CURSOR_OUTPUT_SIZE });
   });
 });
 
 describe("dynamic segmented ANI export", () => {
-  it("encodes exactly five ordered 64x64 cursor frames", () => {
+  it("encodes exactly five ordered 128x128 cursor frames", () => {
     const frames = [1, 2, 3, 4, 5].map((value) => Uint8Array.from([value, value + 10]));
     const ani = encodeAni(frames, 8);
 
@@ -87,8 +88,8 @@ describe("dynamic segmented ANI export", () => {
     expect(readAscii(ani, anihOffset, 4)).toBe("anih");
     expect(readU32(ani, anihOffset + 8 + 4)).toBe(5);
     expect(readU32(ani, anihOffset + 8 + 8)).toBe(5);
-    expect(readU32(ani, anihOffset + 8 + 12)).toBe(64);
-    expect(readU32(ani, anihOffset + 8 + 16)).toBe(64);
+    expect(readU32(ani, anihOffset + 8 + 12)).toBe(CURSOR_OUTPUT_SIZE);
+    expect(readU32(ani, anihOffset + 8 + 16)).toBe(CURSOR_OUTPUT_SIZE);
 
     const payloads: number[] = [];
     for (let offset = 12; offset + 8 <= ani.length; offset += 1) {

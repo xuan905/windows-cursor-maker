@@ -6,7 +6,7 @@ describe("standard prompt", () => {
     const prompt = buildStandardPrompt("一拳超人 Q 版崎玉老師，光頭、黃色英雄服、紅色手套與白色披風");
     expect(prompt).toContain("clean 5×3 PNG sprite sheet");
     expect(prompt).toContain("15 cells must be exactly equal");
-    expect(prompt).toContain("final 64×64 output");
+    expect(prompt).toContain("final 128×128 output");
     expect(prompt).toContain("12% safe margin");
     expect(prompt).toContain("solid white interior/fill with crisp black outline/linework");
     expect(prompt).toContain("#00FF00");

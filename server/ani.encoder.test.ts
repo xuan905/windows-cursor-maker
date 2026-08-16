@@ -12,6 +12,9 @@ describe("ANI encoder", () => {
     expect(text(result, 8, 4)).toBe("ACON");
     expect(text(result, 12, 4)).toBe("anih");
     expect(new DataView(result.buffer).getUint32(24, true)).toBe(5);
+    expect(new DataView(result.buffer).getUint32(28, true)).toBe(5);
+    expect(new DataView(result.buffer).getUint32(32, true)).toBe(128);
+    expect(new DataView(result.buffer).getUint32(36, true)).toBe(128);
     expect(decoded).toContain("rate");
     expect(decoded).toContain("seq ");
     expect(decoded).toContain("LIST");

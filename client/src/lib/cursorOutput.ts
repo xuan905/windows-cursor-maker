@@ -1,4 +1,4 @@
-export const CURSOR_OUTPUT_SIZE = 64;
+export const CURSOR_OUTPUT_SIZE = 128;
 export const CURSOR_SHEET_COLUMNS = 5;
 export const CURSOR_SHEET_ROWS = 3;
 
